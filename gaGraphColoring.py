@@ -1,5 +1,4 @@
 from random import randint
-import itertools
 import numpy as np
 
 n = 20
@@ -33,6 +32,8 @@ def createChromosome():
 
 def createPopulation():
     return np.array([createChromosome() for i in range(popSize)])
+
+# TODO: Parent selection 
 
 # First crossover function
 def twoPointCrossover(parent1, parent2):

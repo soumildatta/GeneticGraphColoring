@@ -1,6 +1,4 @@
-from pydoc import doc
 from random import randint
-import itertools
 import numpy as np
 
 n = 1000
