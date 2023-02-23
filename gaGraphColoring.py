@@ -33,7 +33,30 @@ def createChromosome():
 def createPopulation():
     return np.array([createChromosome() for i in range(popSize)])
 
+# TODO: Fitness function
+def fitnessFunc(population):
+    # Goal is to minimize fitness
+    fitnessArray = []
+
+    for chromosome in population:
+        penalty = 0
+
+        for vertex1 in range(n):
+            # It could be i+1, since when i == j, graph[i][j] guaranteed to be 0
+            for vertex2 in range(vertex1, n):
+                if graph[vertex1][vertex2] == 1 and chromosome[vertex1] == chromosome[vertex2]:
+                    penalty += 1
+
+        fitnessArray.append(penalty)
+    
+    return fitnessArray
+
+
+
 # TODO: Parent selection 
+def selectParent(population):
+    # Select parents
+    print(population[0])
 
 # First crossover function
 def twoPointCrossover(parent1, parent2):
@@ -81,10 +104,11 @@ if __name__ == '__main__':
     getMaxColors()
     print('Max colors:', maxNumColors)
     population = createPopulation()
-    print(population)
+    # print(population)
     twoPointCrossover(createChromosome(), createChromosome())
     newPop = mutation1(population, 0.30)
-    print(newPop)
+    # print(newPop)
+    selectParent(population)
 
 
     # Each solution is represented in a 1D array where the index of each item in that array maps to the index of a vertex in the graph
