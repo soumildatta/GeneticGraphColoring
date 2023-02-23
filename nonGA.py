@@ -102,8 +102,3 @@ if __name__ == '__main__':
     print(maxColors)
 
     iterateTests(100)
-
-    # testGraph = generateTestGraph()
-    # result = testColoring(testGraph)
-    # maxx = maxColoring(result)
-    # print(maxx)

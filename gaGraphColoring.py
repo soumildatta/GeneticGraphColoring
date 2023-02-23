@@ -72,18 +72,12 @@ def twoPointCrossover(parent1, parent2):
     firstPoint = randint(1, n - 3)
     secondPoint = randint(firstPoint + 1, n - 1)
 
-    # Print parents
-    # print(f'Parent 1:\t{parent1}\nParent 2:\t{parent2}')
-
     child1 = np.concatenate((parent1[:firstPoint], parent2[firstPoint:secondPoint], parent1[secondPoint:]))
-    # child2 = np.concatenate((parent2[:firstPoint], parent1[firstPoint:secondPoint], parent2[secondPoint:]))
-
-    # print(f'Child1:\t\t{child1}\nChild2:\t\t{child2}')
-    # print(f'Child1:\t\t{child1}')
 
     return np.array(child1)
 
 # TODO: Second crossover function
+
 
 def mutation1(population, percent):
     # Random mutation 
@@ -101,6 +95,19 @@ def mutation1(population, percent):
         # Mutate randomly selected chromosome
         randomGene = randint(0, len(population[index]) - 1)
         population[index][randomGene] = randint(1, maxNumColors)
+
+    return newpop
+
+
+# TODO: New mutation
+def mutation2(population, percent):
+    print('New mutation function')
+
+    newpop = population 
+    numMutations = int(len(population) * percent)
+    for mutation in range(numMutations):
+        # Do something
+        continue
 
     return newpop
 
