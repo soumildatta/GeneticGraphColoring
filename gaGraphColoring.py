@@ -2,7 +2,7 @@ from random import randint
 import numpy as np
 
 n = 20
-popSize = 100
+popSize = 20
 graph = []
 maxNumColors = 0
 
@@ -51,12 +51,21 @@ def fitnessFunc(population):
     
     return fitnessArray
 
+def selectParent(population, fitnessScores, ratio):
+    # Fitness scores map with each chromosome in population
 
+    # Ratio is the percentages of chromosomes to be designated as parents
+    parentsToSelect = int(len(population) * ratio)
+    # Maybe need to handle odd or even numbers
 
-# TODO: Parent selection 
-def selectParent(population):
-    # Select parents
-    print(population[0])
+    # Dictionary is more efficient than list - make a dictionary of top fitness parents
+    parentDict = {}
+    for index in np.argsort(fitnessScores)[-parentsToSelect:]:
+        parentDict[index] = population[index]
+    # print(topParents)
+
+    return parentDict
+
 
 # First crossover function
 def twoPointCrossover(parent1, parent2):
@@ -105,11 +114,17 @@ if __name__ == '__main__':
     print('Max colors:', maxNumColors)
     population = createPopulation()
     # print(population)
+
+    fitnessScores = fitnessFunc(population)
+    print(fitnessScores)
+
+    parents = selectParent(population, fitnessScores, 0.5)
+    print(parents)
+
+    # Loop over parents and perform crossover and generate a child population
     twoPointCrossover(createChromosome(), createChromosome())
     newPop = mutation1(population, 0.30)
     # print(newPop)
-    selectParent(population)
-
 
     # Each solution is represented in a 1D array where the index of each item in that array maps to the index of a vertex in the graph
     # These vertices in the solution are assigned the lowest color number that they can be assigned
