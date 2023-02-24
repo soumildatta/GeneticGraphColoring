@@ -119,6 +119,11 @@ if __name__ == '__main__':
     # printGraph()
     getMaxColors()
     print('Max colors:', maxNumColors)
+
+
+
+
+
     population = createPopulation()
     # print(population)
 
@@ -131,6 +136,10 @@ if __name__ == '__main__':
     # Loop over parents and perform crossover and generate a child population
     twoPointCrossover(createChromosome(), createChromosome())
     newPop = mutation1(population, 0.30)
+
+
+
+
     # print(newPop)
 
     # Each solution is represented in a 1D array where the index of each item in that array maps to the index of a vertex in the graph
