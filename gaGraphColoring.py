@@ -52,6 +52,7 @@ def fitnessFunc(population):
     return fitnessArray
 
 def selectParent(population, fitnessScores, ratio):
+    # RETURN: Dict: {index: parent chromosome}
     # Fitness scores map with each chromosome in population
 
     # Ratio is the percentages of chromosomes to be designated as parents
