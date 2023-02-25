@@ -59,6 +59,7 @@ def fitnessFunc(population):
     return fitnessArray
 
 def selectParent(population, fitnessScores, ratio):
+    # RETURN: Dict: {index: parent chromosome}
     # Fitness scores map with each chromosome in population
 
     # Ratio is the percentages of chromosomes to be designated as parents
@@ -68,6 +69,7 @@ def selectParent(population, fitnessScores, ratio):
     # Dictionary is more efficient than list - make a dictionary of top fitness parents
     parentDict = {}
     for index in np.argsort(fitnessScores)[-parentsToSelect:]:
+        
         parentDict[index] = population[index]
     # print(topParents)
     return parentDict
@@ -130,6 +132,8 @@ if __name__ == '__main__':
     # printGraph()
     getMaxColors()
     print('Max colors:', maxNumColors)
+
+
     population = createPopulation()
     # print(population)
 
@@ -140,7 +144,7 @@ if __name__ == '__main__':
     while 0 not in fitnessScores:
         count += 1
         parents = selectParent(population, fitnessScores, 0.5)
-        elites = getEliteChromosomes(population, fitnessScores, 0.05)
+        print(parents)
         # print(parents)
         # print(population)
 
@@ -154,8 +158,11 @@ if __name__ == '__main__':
         # Do mutation here on the new children
         population = mutation1(population, 0.05)
 
-        for items in elites:
-            population.append(items)
+        # hello = 0
+        # for items in elites:
+        #     hello += 1
+        #     population.append(items)
+        # print(hello)
         
         for i in range(len(population), popSize):
             population.append(createChromosome())
