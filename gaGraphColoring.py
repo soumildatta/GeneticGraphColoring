@@ -3,7 +3,7 @@ import random
 import numpy as np
 from itertools import tee
 
-n = 25
+n = 35
 popSize = 50
 graph = []
 maxNumColors = 0
@@ -112,6 +112,14 @@ def twoPointCrossover(parent1, parent2):
 
     return np.array(child1)
 
+def twoPointCrossover2(parent1, parent2):
+    firstPoint = randint(1, n - 3)
+    secondPoint = randint(firstPoint + 1, n - 1)
+    child1 = np.concatenate((parent1[:firstPoint], parent2[firstPoint:secondPoint], parent1[secondPoint:]))
+    child2 = np.concatenate((parent2[:firstPoint], parent1[firstPoint:secondPoint], parent2[secondPoint:]))
+
+    return np.array(child1), np.array(child2)
+
 def onePointCrossover(parent1, parent2):
     splitPoint = randint(1, n - 2)
     child1 = np.concatenate((parent1[0:splitPoint], parent2[splitPoint:]))
@@ -122,10 +130,6 @@ def onePointCrossover(parent1, parent2):
 def mutation1(population, percent):
     # Random mutation 
     # Returns a new population
-
-    # Soft copy - not creating new list, simply for more understandable code 
-    newpop = population
-
     numMutations = int(len(population) * percent)
 
     for mutation in range(numMutations):
@@ -136,25 +140,29 @@ def mutation1(population, percent):
         randomGene = randint(0, len(population[index]) - 1)
         population[index][randomGene] = randint(1, maxNumColors)
 
-    return newpop
+    return population
 
 def newMutation(population, percent):
-    newpop = population
     numMutations = int(len(population) * percent)
 
     for mutation in range(numMutations):
         index = randint(0, len(population) - 1)
         chromosome = population[index]
 
-        print(maxNumColors)
+        for vertex in range(len(chromosome)):
+            adjacentColors = []
+            for otherVertex in range(vertex + 1, len(chromosome)):
+                if chromosome[vertex] == chromosome[otherVertex] and graph[vertex][otherVertex] == 1:
+                    adjacentColors.append(chromosome[vertex])
+            validColors = [color for color in range(maxNumColors + 1) if color not in adjacentColors]
+            population[index][vertex] == random.choice(validColors)
+                    
+        # adjacentColors = [chromosome[vertex] for vertex in range(len(chromosome)) if graph[index][vertex] == 1]
+        # validColors = [color for color in range(maxNumColors + 1) if color not in adjacentColors]
 
-        adjacentColors = [chromosome[vertex] for vertex in range(len(chromosome)) if graph[index][vertex] == 1]
-        validColors = [color for color in range(maxNumColors + 1) if color not in adjacentColors]
-
-    return newpop
+    return population
 
 def mutation2(population, percent):
-    newpop = population 
     numMutations = int(len(population) * percent)
 
     for mutation in range(numMutations):
@@ -168,8 +176,27 @@ def mutation2(population, percent):
             for vertex2 in range(vertex1, n):
                 if graph[vertex1][vertex2] == 1 and chromosome[vertex1] == chromosome[vertex2]:
                     chromosome[vertex1] = randint(1, maxNumColors)
+        population[index] = chromosome
 
-    return newpop
+    return population
+
+
+def mutation12(individual):
+    probability = 0.4
+    check = random.uniform(0, 1)
+    if(check <= probability):
+        position = random.randint(0, n-1)
+        individual[position] = random.randint(1, maxNumColors)
+    return individual
+
+def mutation22(individual):
+    probability = 0.2
+    check = random.uniform(0, 1)
+    if(check <= probability):
+        position = random.randint(0, n-1)
+        individual[position] = random.randint(1, maxNumColors)
+    return individual
+
 
 
 #! --------- TEST METHODS
@@ -216,6 +243,8 @@ if __name__ == '__main__':
     # printGraph()
     getMaxColors()
 
+    checkCount = 0
+
     while True:
         print('Max colors:', maxNumColors)
 
@@ -225,39 +254,64 @@ if __name__ == '__main__':
         fitnessScores = fitnessFunc(population)
         # print(fitnessScores)
 
-        count = 0
-        while 0 not in fitnessScores and count < 5000:
-            count += 1
+        generations = 0
+        numGenerations = 3500
+        
+        # Dynamically increase number of generations based on n
+        if n  >= 30:
+            numGenerations *= 200
+
+        while 0 not in fitnessScores and generations < numGenerations:
+            generations += 1
             # tournamentSelection(population, fitnessScores, 0.4)
 
+            #! ====== PARENT SELECTION
             parents = {}
-            if count <= 1000:
-                parents = tournamentSelection(population, fitnessScores, 0.4)
+            if generations <= 1000:
+                parents = tournamentSelection(population, fitnessScores, 1.0)
             else:
-                parents = selectParent(population, fitnessScores, 0.4)
+                parents = selectParent(population, fitnessScores, 0.9)
 
-            # print(parents)
-            # print(parents)
-            # print(population)
-
+            #! ====== CROSSOVER
             population = []
             # Loop over parents and perform crossover and generate a child population
             for (index1, chromosome1), (index2, chromosome2) in pairwise(parents.items()):
-                if count <= 1000:
+                if generations <= 800:
                     child = twoPointCrossover(chromosome1, chromosome2)
+                    population.append(child)
+                elif generations <= 2000:
+                    child1, child2 = twoPointCrossover2(chromosome1, chromosome2)
+                    population.append(child1)
+                    population.append(child2)
                 else:
                     child = onePointCrossover(chromosome1, chromosome2)
-                population.append(child)
+                    population.append(child)
 
-            # Do mutation here on the new children
+            #! ======= MUTATION
+            # Do mutation here only on the new children
             # population = newMutation(population, 0.7)
-            population = mutation2(population, 0.7)
+
+            if generations <= 300:
+                population = mutation1(population, 0.5)
+            elif generations <= 1000:
+                population = newMutation(population, 0.7)
+            elif generations <= 3000:
+                population = mutation2(population, 0.7)
+            else:
+                population = mutation2(population, 0.8)
+
+            # for individual in range(len(population)):
+            #     if generations < 1000:
+            #         population[individual] = mutation12(population[individual])
+            #     else:
+            #         population[individual] = mutation22(population[individual])
 
             #! RANDOMLY ADD A PARENT TO THE POPULATION
             parent = list(parents.values())
             parent = random.sample(parent, k=2)
             population.append(parent[0])
             
+            #! Fill up the rest of the population with random values
             for i in range(len(population), popSize):
                 population.append(createChromosome())
         
@@ -266,16 +320,22 @@ if __name__ == '__main__':
             np.random.shuffle(population)
             fitnessScores = fitnessFunc(population)
 
-            # print(fitnessScores)
-
             if 0 in fitnessScores:
-                print(count, population[fitnessScores.index(0)])
+                print(generations, population[fitnessScores.index(0)])
                 break
         
         if 0 in fitnessScores:
             maxNumColors -= 1
+            generations = 0
         else:
-            # print(count, population[fitnessScores.index(1)])
+            # print(generations, population[fitnessScores.index(1)])
+            if checkCount != 1:
+                print('Checking for improvement')
+                maxNumColors -= 1
+                checkCount += 1
+                continue
+
             print('Solution found:', maxNumColors + 1)
             print('Test Solution:', testColoring())
+
             break
