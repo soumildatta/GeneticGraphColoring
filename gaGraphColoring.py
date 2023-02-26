@@ -108,11 +108,15 @@ def getEliteChromosomes(population, fitnessScores, ratio):
 def twoPointCrossover(parent1, parent2):
     firstPoint = randint(1, n - 3)
     secondPoint = randint(firstPoint + 1, n - 1)
-
     child1 = np.concatenate((parent1[:firstPoint], parent2[firstPoint:secondPoint], parent1[secondPoint:]))
 
     return np.array(child1)
 
+def onePointCrossover(parent1, parent2):
+    splitPoint = randint(1, n - 2)
+    child1 = np.concatenate((parent1[0:splitPoint], parent2[splitPoint:]))
+
+    return np.array(child1)
 
 #! ============== MUTATION FUNCTIONS
 def mutation1(population, percent):
