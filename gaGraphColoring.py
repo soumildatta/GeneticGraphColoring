@@ -3,7 +3,7 @@ import random
 import numpy as np
 from itertools import tee
 
-n = 35
+n = 50
 popSize = 50
 graph = []
 maxNumColors = 0
@@ -162,6 +162,13 @@ def newMutation(population, percent):
 
     return population
 
+def newnewMutation(population, percent):
+    for index in range(len(population)):
+        mutateChance = random.uniform(0, 1)
+        if mutateChance > percent:
+            mutateIndex = randint(0, len(population[index] - 1))
+            population[index][mutateIndex] = randint(1, maxNumColors)
+
 def mutation2(population, percent):
     numMutations = int(len(population) * percent)
 
@@ -179,24 +186,6 @@ def mutation2(population, percent):
         population[index] = chromosome
 
     return population
-
-
-def mutation12(individual):
-    probability = 0.4
-    check = random.uniform(0, 1)
-    if(check <= probability):
-        position = random.randint(0, n-1)
-        individual[position] = random.randint(1, maxNumColors)
-    return individual
-
-def mutation22(individual):
-    probability = 0.2
-    check = random.uniform(0, 1)
-    if(check <= probability):
-        position = random.randint(0, n-1)
-        individual[position] = random.randint(1, maxNumColors)
-    return individual
-
 
 
 #! --------- TEST METHODS
@@ -259,7 +248,7 @@ if __name__ == '__main__':
         
         # Dynamically increase number of generations based on n
         if n  >= 30:
-            numGenerations *= 200
+            numGenerations = n * 200
 
         while 0 not in fitnessScores and generations < numGenerations:
             generations += 1
@@ -272,6 +261,7 @@ if __name__ == '__main__':
             else:
                 parents = selectParent(population, fitnessScores, 0.9)
 
+
             #! ====== CROSSOVER
             population = []
             # Loop over parents and perform crossover and generate a child population
@@ -279,13 +269,14 @@ if __name__ == '__main__':
                 if generations <= 800:
                     child = twoPointCrossover(chromosome1, chromosome2)
                     population.append(child)
-                elif generations <= 2000:
-                    child1, child2 = twoPointCrossover2(chromosome1, chromosome2)
-                    population.append(child1)
-                    population.append(child2)
+                # elif generations <= 2000:
+                #     child1, child2 = twoPointCrossover2(chromosome1, chromosome2)
+                #     population.append(child1)
+                #     population.append(child2)
                 else:
                     child = onePointCrossover(chromosome1, chromosome2)
                     population.append(child)
+
 
             #! ======= MUTATION
             # Do mutation here only on the new children
@@ -300,11 +291,6 @@ if __name__ == '__main__':
             else:
                 population = mutation2(population, 0.8)
 
-            # for individual in range(len(population)):
-            #     if generations < 1000:
-            #         population[individual] = mutation12(population[individual])
-            #     else:
-            #         population[individual] = mutation22(population[individual])
 
             #! RANDOMLY ADD A PARENT TO THE POPULATION
             parent = list(parents.values())
@@ -323,6 +309,9 @@ if __name__ == '__main__':
             if 0 in fitnessScores:
                 print(generations, population[fitnessScores.index(0)])
                 break
+
+            if generations % 100 == 0:
+                print(generations)
         
         if 0 in fitnessScores:
             maxNumColors -= 1
