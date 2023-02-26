@@ -3,7 +3,7 @@ import random
 import numpy as np
 from itertools import tee
 
-n = 15
+n = 25
 popSize = 50
 graph = []
 maxNumColors = 0
@@ -226,7 +226,7 @@ if __name__ == '__main__':
         # print(fitnessScores)
 
         count = 0
-        while 0 not in fitnessScores and count < 15000:
+        while 0 not in fitnessScores and count < 5000:
             count += 1
             # tournamentSelection(population, fitnessScores, 0.4)
 
@@ -243,12 +243,15 @@ if __name__ == '__main__':
             population = []
             # Loop over parents and perform crossover and generate a child population
             for (index1, chromosome1), (index2, chromosome2) in pairwise(parents.items()):
-                child = twoPointCrossover(chromosome1, chromosome2)
+                if count <= 1000:
+                    child = twoPointCrossover(chromosome1, chromosome2)
+                else:
+                    child = onePointCrossover(chromosome1, chromosome2)
                 population.append(child)
 
             # Do mutation here on the new children
-            population = newMutation(population, 0.7)
-            # population = mutation2(population, 0.7)
+            # population = newMutation(population, 0.7)
+            population = mutation2(population, 0.7)
 
             #! RANDOMLY ADD A PARENT TO THE POPULATION
             parent = list(parents.values())
