@@ -3,7 +3,7 @@ import random
 import numpy as np
 from itertools import tee
 
-n = 50
+n = 40
 popSize = 50
 graph = []
 maxNumColors = 0
