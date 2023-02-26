@@ -1,9 +1,10 @@
 from random import randint
+import random
 import numpy as np
 from itertools import tee
 
-n = 20
-popSize = 20
+n = 10
+popSize = 80
 graph = []
 maxNumColors = 0
 
@@ -131,48 +132,67 @@ if __name__ == '__main__':
     graph = createGraph()
     # printGraph()
     getMaxColors()
-    print('Max colors:', maxNumColors)
 
+    while True:
+        print('Max colors:', maxNumColors)
 
-    population = createPopulation()
-    # print(population)
-
-    fitnessScores = fitnessFunc(population)
-    # print(fitnessScores)
-
-    count = 0
-    while 0 not in fitnessScores:
-        count += 1
-        parents = selectParent(population, fitnessScores, 0.5)
-        print(parents)
-        # print(parents)
+        population = createPopulation()
         # print(population)
 
-        population = []
-        # Loop over parents and perform crossover and generate a child population
-        # for index, chromosome in parents.items():
-        for (index1, chromosome1), (index2, chromosome2) in pairwise(parents.items()):
-            child = twoPointCrossover(chromosome1, chromosome2)
-            population.append(child)
-
-        # Do mutation here on the new children
-        population = mutation1(population, 0.05)
-
-        # hello = 0
-        # for items in elites:
-        #     hello += 1
-        #     population.append(items)
-        # print(hello)
-        
-        for i in range(len(population), popSize):
-            population.append(createChromosome())
-        
         fitnessScores = fitnessFunc(population)
+        # print(fitnessScores)
 
-        print(fitnessScores)
+        count = 0
+        while 0 not in fitnessScores and count < 20000:
+            count += 1
+            parents = selectParent(population, fitnessScores, 0.4)
+            # print(parents)
+            # print(parents)
+            # print(population)
 
+            population = []
+            # Loop over parents and perform crossover and generate a child population
+            # for index, chromosome in parents.items():
+            for (index1, chromosome1), (index2, chromosome2) in pairwise(parents.items()):
+                child = twoPointCrossover(chromosome1, chromosome2)
+                population.append(child)
+
+            # Do mutation here on the new children
+            population = mutation1(population, 0.08)
+
+            # hello = 0
+            # for items in elites:
+            #     hello += 1
+            #     population.append(items)
+            # print(hello)
+
+            #! RANDOMLY ADD A PARENT TO THE POPULATION
+            parent = list(parents.values())
+            parent = random.sample(parent, k=1)
+            population.append(parent[0])
+            
+            for i in range(len(population), popSize):
+                population.append(createChromosome())
+        
+            fitnessScores = fitnessFunc(population)
+
+            #!
+            # print(fitnessScores)
+
+            if 0 in fitnessScores:
+                print(count, population[fitnessScores.index(0)])
+                break
+        
         if 0 in fitnessScores:
-            print(count, population[fitnessScores.index(0)])
+            maxNumColors -= 1
+        else:
+            # print(count, population[fitnessScores.index(1)])
+            print('Solution found:', maxNumColors - 1)
+            break
 
-        # Each solution is represented in a 1D array where the index of each item in that array maps to the index of a vertex in the graph
-        # These vertices in the solution are assigned the lowest color number that they can be assigned
+        # else:
+        #     print(fitnessScores)
+        #     print('Answer is', (maxNumColors - 1))
+
+            # Each solution is represented in a 1D array where the index of each item in that array maps to the index of a vertex in the graph
+            # These vertices in the solution are assigned the lowest color number that they can be assigned

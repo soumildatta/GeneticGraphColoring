@@ -1,7 +1,7 @@
 from random import randint
 import numpy as np
 
-n = 1000
+n = 20
 graph = np.empty([n, n])
 
 def createGraph():
@@ -101,4 +101,4 @@ if __name__ == '__main__':
     maxColors = maxColoring(result)
     print(maxColors)
 
-    iterateTests(100)
+    # iterateTests(100)
