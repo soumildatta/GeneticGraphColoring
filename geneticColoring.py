@@ -6,8 +6,8 @@ from itertools import tee
 n = 30
 popSize = 50
 
-graph = []
-maxNumColors = 0
+# graph = []
+# maxNumColors = 0
 
 #! ============== GRAPH AND POPULATION CREATION FUNCTIONS
 def createGraph():
@@ -21,22 +21,23 @@ def createGraph():
 
     return graph
 
-def printGraph():
+def printGraph(graph):
     print([row for row in graph])
 
-def getMaxColors():
-    global maxNumColors
+def getMaxColors(graph):
+    maxNumColors = 0
     for row in graph:
         currMax = sum(row)
         if currMax > maxNumColors:
             maxNumColors = currMax
+    return maxNumColors
 
-def createChromosome():
+def createChromosome(maxNumColors):
     # Each solution is represented in a 1D array where the index of each item in that array maps to the index of a vertex in the graph
     return np.random.randint(1, maxNumColors + 1, size=(n))
 
-def createPopulation():
-    return np.array([createChromosome() for i in range(popSize)])
+def createPopulation(maxNumColors):
+    return np.array([createChromosome(maxNumColors) for i in range(popSize)])
 
 
 #! ============== FITNESS FUNCTION
@@ -51,7 +52,19 @@ def calcFitness(graph, chromosome):
 
 #! ============== SELECTION
 def truncationSelection(population):
-    print('hi')
+    fitnessResult = [calcFitness(graph, chromosome) for chromosome in population]
+    sortedChromosomes = []
+    delete = 40
+    for i in range(delete):
+        top = 0
+        topIdx = 0
+        for j in range(len(fitnessResult)):
+            if fitnessResult[j] < top:
+                top = fitnessResult[j]
+                topIdx = j
+        fitnessResult[topIdx] = 0
+        sortedChromosomes.append(population[topIdx])
+    return sortedChromosomes
 
 def tournamentSelection(population):
     newPopulation = []
@@ -70,6 +83,13 @@ def onePointCrossover(parent1, parent2):
     splitPoint = randint(2, n - 2)
     child1 = np.concatenate((parent1[:splitPoint], parent2[splitPoint:]))
     child2 = np.concatenate((parent2[:splitPoint], parent1[splitPoint:]))
+    return child1, child2
+
+def twoPointCrossover(parent1, parent2):
+    firstPoint = randint(1, n - 3)
+    secondPoint = randint(firstPoint + 1, n - 1)
+    child1 = np.concatenate((parent1[:firstPoint], parent2[firstPoint:secondPoint], parent1[secondPoint:]))
+    child2 = np.concatenate((parent2[:firstPoint], parent1[firstPoint:secondPoint], parent2[secondPoint:]))
     return child1, child2
 
 
@@ -125,47 +145,57 @@ def testColoring():
 
 if __name__ == '__main__':
     graph = createGraph()
-    getMaxColors()
+    maxNumColors = getMaxColors(graph)
 
     checkCount = 0
+    failedColors = 0
 
     print(f'Trying to color with {maxNumColors} colors')
     while True:
-        population = createPopulation()
+        population = createPopulation(maxNumColors)
 
         bestFitness = calcFitness(graph, population[0])
         fittest = population[0]
 
         # Generation Control
         generation = 0
-        numGenerations = 1000
+        numGenerations = 50
 
-        if n >= 40:
+        if n > 5:
             numGenerations = n * 15
 
         while bestFitness != 0 and generation != numGenerations:
             generation += 1
             population = tournamentSelection(population)
+            # population = truncationSelection(population)
+
+            # Make sure population is even 
+            if len(population) % 2 != 0:
+                population.pop()
 
             #! CROSSOVER
-            newPopulation = []
+            childrenPopulation = []
             random.shuffle(population)
             for i in range(0, len(population) - 1, 2):
-                child1, child2 = onePointCrossover(population[i], population[i + 1])
-                newPopulation.append(child1)
-                newPopulation.append(child2)
+                child1, child2 = twoPointCrossover(population[i], population[i + 1])
+                childrenPopulation.append(child1)
+                childrenPopulation.append(child2)
 
             #! MUTATION
-            for chromosome in newPopulation:
+            for chromosome in childrenPopulation:
                 if generation < 200:
-                    chromosome = mutation(chromosome, 0.5)
+                    chromosome = mutation(chromosome, 0.65)
                 elif generation < 400:
-                    chromosome = mutation(chromosome, 0.4)
+                    chromosome = mutation(chromosome, 0.5)
                 else:
-                    chromosome = mutation(chromosome, 0.2)
+                    chromosome = mutation(chromosome, 0.15)
+
+            #! Fill up the rest of the population with random values
+            for i in range(len(population), popSize):
+                population.append(createChromosome(maxNumColors))
 
             #! FITNESS
-            population = newPopulation
+            population = childrenPopulation
             bestFitness = calcFitness(graph, population[0])
             fittest = population[0]
             for individual in population:
@@ -185,12 +215,20 @@ if __name__ == '__main__':
             maxNumColors -= 1
             checkCount = 0
         else:
-            if checkCount != 1:
-                print(f'{maxNumColors} failed. For safety, checking for improvement with {maxNumColors - 1} colors')
-                maxNumColors -= 1
+            if checkCount != 2 and maxNumColors > 1:
+                failedColors = maxNumColors
+                
+                if checkCount == 0:
+                    print(f'{maxNumColors} failed. For safety, checking for improvement with {maxNumColors} colors again')
+                if checkCount == 1:
+                    print(f'{maxNumColors} failed. For safety, checking for improvement with {maxNumColors - 1} colors')
+                    maxNumColors -= 1
+
                 checkCount += 1
                 continue
-
-            print(f'Graph is {maxNumColors + 1} colorable')
+            if maxNumColors > 1:
+                print(f'Graph is {failedColors + 1} colorable')
+            else:
+                print(f'Graph is {maxNumColors + 1} colorable')
             print('Test Solution:', testColoring())
             break
