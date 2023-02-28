@@ -1,7 +1,7 @@
 from random import randint
 import numpy as np
 
-n = 20
+n = 40
 graph = np.empty([n, n])
 
 def createGraph():
@@ -28,7 +28,7 @@ def doColoring():
     graphColors = {}
 
     for vertexIndex in range(n):
-        unused_colors = n * [True]
+        unusedColors = n * [True]
 
         for neighborIndex in range(n):
             if(graph[vertexIndex][neighborIndex] == 1):
@@ -38,8 +38,8 @@ def doColoring():
                 else:
                     if neighborIndex in graphColors:
                         color = graphColors[neighborIndex]
-                        unused_colors[color] = False
-        for color, unused in enumerate(unused_colors):
+                        unusedColors[color] = False
+        for color, unused in enumerate(unusedColors):
             if unused:
                 graphColors[vertexIndex] = color
                 break
@@ -49,56 +49,9 @@ def maxColoring(colorDict):
     maxColors = max(colorDict.values())
     return maxColors
 
-def generateTestGraph():
-    global graph
-    result = {}
-
-    for i in range(n):
-        result[i] = []
-        for j in range(n):
-            if graph[i][j] == 1:
-                result[i].append(j)
-
-    return result
-
-def testColoring(graph):
-  vertices = sorted((list(graph.keys())))
-  colour_graph = {}
-
-  for vertex in vertices:
-    unused_colours = len(vertices) * [True]
-
-    for neighbor in graph[vertex]:
-      if neighbor in colour_graph:
-        colour = colour_graph[neighbor]
-        unused_colours[colour] = False
-    for colour, unused in enumerate(unused_colours):
-        if unused:
-            colour_graph[vertex] = colour
-            break
-
-  return colour_graph
-
-def iterateTests(n):
-    for i in range(n):
-        print(f'{i}/{n}')
-        createGraph()
-        result = doColoring()
-        maxColors = maxColoring(result)
-
-        testGraph = generateTestGraph()
-        result = testColoring(testGraph)
-        maxx = maxColoring(result)
-
-        if maxColors != maxx:
-            print('ERROR IN ITERATION', i)
-            break
-
 if __name__ == '__main__':
     createGraph()
     # printGraph()
     result = doColoring()
     maxColors = maxColoring(result)
     print(maxColors)
-
-    # iterateTests(100)

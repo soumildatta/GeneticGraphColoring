@@ -1,3 +1,3 @@
 # Genetic Graph Coloring Algorithm
 
-This project is currently in Python 3, but is in the process of being ported over to a C++ version.
+Run the programs as simple python programs with the python keyword. Python 3 is required to run these programs.

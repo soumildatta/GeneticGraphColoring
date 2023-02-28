@@ -3,11 +3,9 @@ import random
 import numpy as np
 from itertools import tee
 
-n = 30
-popSize = 50
-
-# graph = []
-# maxNumColors = 0
+# Change n to change graph size
+n = 50
+popSize = 60
 
 #! ============== GRAPH AND POPULATION CREATION FUNCTIONS
 def createGraph():
@@ -54,16 +52,16 @@ def calcFitness(graph, chromosome):
 def truncationSelection(population):
     fitnessResult = [calcFitness(graph, chromosome) for chromosome in population]
     sortedChromosomes = []
-    delete = 40
+    delete = 45
     for i in range(delete):
-        top = 0
-        topIdx = 0
+        best = fitnessResult[0]
+        bestIdx = 0
         for j in range(len(fitnessResult)):
-            if fitnessResult[j] < top:
-                top = fitnessResult[j]
-                topIdx = j
-        fitnessResult[topIdx] = 0
-        sortedChromosomes.append(population[topIdx])
+            if fitnessResult[j] < best:
+                best = fitnessResult[j]
+                bestIdx = j
+        fitnessResult[bestIdx] = 0
+        sortedChromosomes.append(population[bestIdx])
     return sortedChromosomes
 
 def tournamentSelection(population):
@@ -122,6 +120,7 @@ def maxColoring(colorDict):
     maxColors = max(colorDict.values())
     return maxColors
 
+# This method was obtained from https://www.codespeedy.com/graph-coloring-using-greedy-method-in-python/
 def testColoring():
   graph = generateTestGraph()
   vertices = sorted((list(graph.keys())))
@@ -145,90 +144,102 @@ def testColoring():
 
 if __name__ == '__main__':
     graph = createGraph()
-    maxNumColors = getMaxColors(graph)
 
-    checkCount = 0
-    failedColors = 0
+    # Some base cases that do not need serious computing 
+    if n == 1:
+        print('Graph is 1 colorable')
+    elif n == 2:
+        if 1 in graph[0]:
+            print('Graph is 2 colorable')
+        else:
+            print('Graph is 1 colorable')
+    else:
+        maxNumColors = getMaxColors(graph)
 
-    print(f'Trying to color with {maxNumColors} colors')
-    while True:
-        population = createPopulation(maxNumColors)
+        checkCount = 0
+        failedColors = 0
 
-        bestFitness = calcFitness(graph, population[0])
-        fittest = population[0]
+        print(f'Trying to color with {maxNumColors} colors')
+        while True:
+            population = createPopulation(maxNumColors)
 
-        # Generation Control
-        generation = 0
-        numGenerations = 50
-
-        if n > 5:
-            numGenerations = n * 15
-
-        while bestFitness != 0 and generation != numGenerations:
-            generation += 1
-            population = tournamentSelection(population)
-            # population = truncationSelection(population)
-
-            # Make sure population is even 
-            if len(population) % 2 != 0:
-                population.pop()
-
-            #! CROSSOVER
-            childrenPopulation = []
-            random.shuffle(population)
-            for i in range(0, len(population) - 1, 2):
-                child1, child2 = twoPointCrossover(population[i], population[i + 1])
-                childrenPopulation.append(child1)
-                childrenPopulation.append(child2)
-
-            #! MUTATION
-            for chromosome in childrenPopulation:
-                if generation < 200:
-                    chromosome = mutation(chromosome, 0.65)
-                elif generation < 400:
-                    chromosome = mutation(chromosome, 0.5)
-                else:
-                    chromosome = mutation(chromosome, 0.15)
-
-            #! Fill up the rest of the population with random values
-            for i in range(len(population), popSize):
-                population.append(createChromosome(maxNumColors))
-
-            #! FITNESS
-            population = childrenPopulation
             bestFitness = calcFitness(graph, population[0])
             fittest = population[0]
-            for individual in population:
-                if(calcFitness(graph, individual) < bestFitness):
-                    bestFitness = calcFitness(graph, individual)
-                    fittest = individual
 
+            # Generation Control
+            generation = 0
+            numGenerations = 50
+
+            if n > 5:
+                numGenerations = n * 15
+
+            while bestFitness != 0 and generation != numGenerations:
+                generation += 1
+
+                #! SELECTION
+                population = tournamentSelection(population)
+                # population = truncationSelection(population)
+
+                # Make sure population is even 
+                if len(population) % 2 != 0:
+                    population.pop()
+
+                #! CROSSOVER
+                childrenPopulation = []
+                random.shuffle(population)
+                for i in range(0, len(population) - 1, 2):
+                    child1, child2 = onePointCrossover(population[i], population[i + 1])
+                    childrenPopulation.append(child1)
+                    childrenPopulation.append(child2)
+
+                #! MUTATION
+                for chromosome in childrenPopulation:
+                    if generation < 200:
+                        chromosome = mutation(chromosome, 0.65)
+                    elif generation < 400:
+                        chromosome = mutation(chromosome, 0.5)
+                    else:
+                        chromosome = mutation(chromosome, 0.15)
+
+                #! Fill up the rest of the population with random values
+                for i in range(len(population), popSize):
+                    population.append(createChromosome(maxNumColors))
+
+                #! FITNESS
+                population = childrenPopulation
+                bestFitness = calcFitness(graph, population[0])
+                fittest = population[0]
+                for individual in population:
+                    if(calcFitness(graph, individual) < bestFitness):
+                        bestFitness = calcFitness(graph, individual)
+                        fittest = individual
+
+                if bestFitness == 0:
+                    break
+
+                # if generation % 10 == 0:
+                #     print(f'generationeration: {generation}, Best Fitness: {bestFitness}, Individual: {fittest}')
+
+            # print(f'Using {maxNumolorsx} colors')
             if bestFitness == 0:
-                break
-
-            # if generation % 10 == 0:
-            #     print(f'generationeration: {generation}, Best Fitness: {bestFitness}, Individual: {fittest}')
-
-        # print(f'Using {maxNumolorsx} colors')
-        if bestFitness == 0:
-            print(f'{maxNumColors} colors succeeded! Trying {maxNumColors - 1} colors')
-            maxNumColors -= 1
-            checkCount = 0
-        else:
-            if checkCount != 2 and maxNumColors > 1:
-                failedColors = maxNumColors
-                
-                if checkCount == 0:
-                    print(f'{maxNumColors} failed. For safety, checking for improvement with {maxNumColors} colors again')
-                if checkCount == 1:
-                    print(f'{maxNumColors} failed. For safety, checking for improvement with {maxNumColors - 1} colors')
-                    maxNumColors -= 1
-
-                checkCount += 1
-                continue
-            if maxNumColors > 1:
-                print(f'Graph is {failedColors + 1} colorable')
+                print(f'{maxNumColors} colors succeeded! Trying {maxNumColors - 1} colors')
+                maxNumColors -= 1
+                checkCount = 0
             else:
-                print(f'Graph is {maxNumColors + 1} colorable')
-            print('Test Solution:', testColoring())
-            break
+                if checkCount != 2 and maxNumColors > 1:
+                    failedColors = maxNumColors
+                    
+                    if checkCount == 0:
+                        print(f'{maxNumColors} failed. For safety, checking for improvement with {maxNumColors} colors again')
+                    if checkCount == 1:
+                        print(f'{maxNumColors} failed. For safety, checking for improvement with {maxNumColors - 1} colors')
+                        maxNumColors -= 1
+
+                    checkCount += 1
+                    continue
+                if maxNumColors > 1:
+                    print(f'Graph is {failedColors + 1} colorable')
+                else:
+                    print(f'Graph is {maxNumColors + 1} colorable')
+                print('Test Solution:', testColoring())
+                break
