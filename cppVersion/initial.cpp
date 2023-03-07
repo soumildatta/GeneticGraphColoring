@@ -85,6 +85,38 @@ int **createPopulation()
     return population;
 }
 
+unsigned int calcFitness(int **graph, int *chromosome)
+{
+    unsigned int penalty { 0u };
+    for(auto i {0u}; i < n; ++i)
+    {
+        for(auto j {i}; j < n; ++j)
+        {
+            if(graph[i][j] == 1 && chromosome[i] == chromosome[j]) penalty += 1;
+        }
+    }
+    return penalty;
+}
+
+int **tournamentSelection(int **population)
+{
+    int **newPopulation = new int *[100];
+    int count {0};
+    for(auto i{0u}; i < 200; i += 2)
+    {
+        if calcFitness(graph, population[i]) < calcFitness(graph, population[i + 1])
+        {
+            newPopulation[count++] = population[i];
+        }
+        else
+        {
+            newPopulation[count++] = population[i + 1];
+        }
+    }
+
+    return newPopulation;
+}
+
 struct CrossoverChildren
 {
     int *child1;
@@ -114,9 +146,9 @@ CrossoverChildren twoPointCross(int *parent1, int *parent2)
 
     cout << firstPoint << " " << secondPoint << endl;
 
-    cout << "parent1: ";
+    // cout << "parent1: ";
     // printChromosome(parent1);
-    cout << "parent2: ";
+    // cout << "parent2: ";
     // printChromosome(parent2);
 
     int *child1 = (int *)malloc(n * sizeof(int));
@@ -144,10 +176,10 @@ CrossoverChildren twoPointCross(int *parent1, int *parent2)
         child2[i] = parent2[i];
     }
 
-    cout << "After crossover" << endl;
-    cout << "child1: ";
+    // cout << "After crossover" << endl;
+    // cout << "child1: ";
     // printChromosome(child1);
-    cout << "child2: ";
+    // cout << "child2: ";
     // printChromosome(child2);
 
     return children;
